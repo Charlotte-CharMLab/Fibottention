@@ -89,4 +89,4 @@ def fibottention(X, W_Q, W_K, W_V, d_h, wmin, wmax, is_modified):
 <br>
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://opensource.org/license/mit) file for details.
+This project is licensed under the Creative Commons Legal Code License - see the [LICENSE](https://creativecommons.org/legal-code-defined/) file for details.
