@@ -19,17 +19,13 @@ Visual perception tasks are predominantly solved by Vision Transformer (ViT) arc
 
 <br>
 
-## Installation:
+## Installation and training of Fibottention for image classification tasks:
 
-#### Use the commands below to install stable versions of Python and PyTorch when setting up your environment:
+Use the commands below to install stable versions of Python and PyTorch when setting up your environment:
 ```
 conda create --name env_name --no-default-packages python=3.7
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```
-
-<br>
-
-## Training the model:
 
 To train the model, use the script.sh script which executes main_finetune.py with specified parameters.
 
@@ -45,10 +41,6 @@ To train the model, use the script.sh script which executes main_finetune.py wit
 - `device`: The GPU device number or ID.
 - `batch`: The batch size for training.
 - `mask_ratio`: The ratio for masking during training.
-  
-<br>
-
-## Example Usage:
 
 For example, to train a model on the CIFAR-10 dataset, use the following command::
 
