@@ -147,5 +147,7 @@ def fibottention(X, W_Q, W_K, W_V, d_h, wmin, wmax, is_modified):
 }
 ```
 
+<br>
+
 ## License
 This project is licensed under the Creative Commons Attribution 4.0 International - see the [LICENSE](https://creativecommons.org/licenses/by/4.0/deed.en) website for details.
