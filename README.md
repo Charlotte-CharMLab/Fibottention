@@ -69,72 +69,72 @@ def getFibonacci(a, b, w_i):
 
 ```python
 def generate_fibomask(L, N, wmin, wmax, is_modified):
-    phi = (1 + 5 ** 0.5) / 2
-    a = int((i * phi) * phi)
-    b = int((i * phi) * (phi ** 2))
-    Omega = np.zeros((h, N+1, N+1))
+    phi = (1 + 5 ** 0.5) / 2  # Golden ratio, used for Fibonacci calculations
+    a = int((i * phi) * phi)  # First Fibonacci-like number for masking
+    b = int((i * phi) * (phi ** 2))  # Second Fibonacci-like number for masking
+    Omega = np.zeros((h, N+1, N+1))  # Initialize the Omega tensor to store masks for all heads
     
-    for i in range(h):
-        w_i = wmin + int(((i - 1) * (wmax - wmin)) / (h - 1))
-        Theta = np.zeros((N, N))
-        I = getFibonacci(a, b, w_i)
+    for i in range(h):  # Loop through each head
+        w_i = wmin + int(((i - 1) * (wmax - wmin)) / (h - 1))  # Calculate the window size for current head
+        Theta = np.zeros((N, N))  # Initialize Theta matrix for storing the mask
+        I = getFibonacci(a, b, w_i)  # Generate Fibonacci sequence with constraints
         
-        if is_modified and i > 1:
-            I.extend([0, (a-i)])
+        if is_modified and i > 1:  # Modify the sequence if required
+            I.extend([0, (a-i)])  # Extend with additional values based on 'i'
             I.extend([0, (i-1)])
         
-        for o in I:
+        for o in I:  # Loop through Fibonacci numbers
             for j in range(N-o):
-                Theta[j, j+1] = 1
+                Theta[j, j+1] = 1  # Set forward connections
             for k in range(o, N):
-                Theta[k+1, k] = 1
+                Theta[k+1, k] = 1  # Set backward connections
         
-        Omega_i = np.ones((N+1, N+1))
-        for j in range(1, N):
+        Omega_i = np.ones((N+1, N+1))  # Create an Omega mask filled with ones
+        for j in range(1, N):  # Adjust the mask using Theta values
             for k in range(1, N):
                 Omega_i[j+1, k+1] = Theta[j, k]
         
-        Omega[i, :, :] = Omega_i
+        Omega[i, :, :] = Omega_i  # Assign the computed mask for current head
     
-    Omega = np.prod(Omega, axis=0)
-    Omega = random_shuffle(L, Omega)
+    Omega = np.prod(Omega, axis=0)  # Combine masks across all heads
+    Omega = random_shuffle(L, Omega)  # Randomly shuffle the mask for more variance
     
-    return Omega
+    return Omega  # Return the final mask
 ```
 
 ### Algorithm 3: Fibottention in a Single Vision Transformer Block
 
 ```python
 def fibottention(X, W_Q, W_K, W_V, d_h, wmin, wmax, is_modified):
-    N, d = X.shape
-    Omega = getMask(L, N, h, wmin, wmax, is_modified)
+    N, d = X.shape  # Get the dimensions of input X
+    Omega = getMask(L, N, h, wmin, wmax, is_modified)  # Generate the mask using the given parameters
     
-    Z = []
-    for i in range(h):
-        Q_i = X @ W_Q[i]
-        K_i = X @ W_K[i]
-        V_i = X @ W_V[i]
+    Z = []  # Initialize a list to store the output of each head
+    for i in range(h):  # Loop through each head
+        Q_i = X @ W_Q[i]  # Calculate the query matrix
+        K_i = X @ W_K[i]  # Calculate the key matrix
+        V_i = X @ W_V[i]  # Calculate the value matrix
         
-        A_i = Q_i @ K_i.T
-        A_i_Omega = np.sign(A_i) * (np.abs(A_i) * Omega[i, :, :])
-        A_i_Omega = softmax(A_i_Omega)
+        A_i = Q_i @ K_i.T  # Compute attention scores
+        A_i_Omega = np.sign(A_i) * (np.abs(A_i) * Omega[i, :, :])  # Apply the mask
+        A_i_Omega = softmax(A_i_Omega)  # Normalize scores with softmax
         
-        Z_i = A_i_Omega @ V_i
-        Z.append(Z_i)
+        Z_i = A_i_Omega @ V_i  # Compute the output of attention mechanism
+        Z.append(Z_i)  # Add the result to the list
     
-    Z = np.concatenate(Z, axis=-1)
-    O = Z @ W_Z
+    Z = np.concatenate(Z, axis=-1)  # Concatenate outputs from all heads
+    O = Z @ W_Z  # Final linear transformation
     
-    return O
+    return O  # Return the final output
 ```
 
 <br>
 
-## Citation & Acknowledgement
+## Citation
 ```
 @article{rahimian2024fibottention,
     title={Inceptive Visual Representation Learning with Diverse Attention Across Heads},
-    author={Ali Khaleghi Rahimian and Manish Kumar Govind and Subhajit Maity and Dominick Reilly and Christian Kümmerle and Srijan Das and Aritra Dutta},
+    author={Rahimian, Ali K. and Govind, Manish K. and Maity, Subhajit and Reilly, Dominick and Kümmerle, Christian and Das, Srijan and Dutta, Aritra},
     journal={arXiv preprint},
     archivePrefix={arXiv},
     year={2024},
