@@ -8,6 +8,9 @@
 <sup>1</sup> University of North Carolina at Charlotte  
 <sup>2</sup> University of Central Florida
 
+<br>
+
+## Overview
 This repository contains the implementation of our proposed Fibottention mechanism and related algorithms. The complete codebase for video understanding and robot learning will be provided soon.
 
 The paper is now available on [arXiv](https://arxiv.org/abs/2406.19391).
