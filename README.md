@@ -27,7 +27,9 @@ conda create --name env_name --no-default-packages python=3.7
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-### Training the model:
+<br>
+
+## Training the model:
 
 To train the model, use the script.sh script which executes main_finetune.py with specified parameters.
 
@@ -44,8 +46,9 @@ To train the model, use the script.sh script which executes main_finetune.py wit
 - `batch`: The batch size for training.
 - `mask_ratio`: The ratio for masking during training.
   
+<br>
 
-### Example Usage:
+## Example Usage:
 
 For example, to train a model on the CIFAR-10 dataset, use the following command::
 
