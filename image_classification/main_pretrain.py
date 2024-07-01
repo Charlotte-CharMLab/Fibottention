@@ -27,8 +27,8 @@ import timm
 assert timm.__version__ == "0.3.2"  # version check
 import timm.optim.optim_factory as optim_factory
 
-import util.misc as misc
-from util.misc import NativeScalerWithGradNormCount as NativeScaler
+import utils.misc as misc
+from utils.misc import NativeScalerWithGradNormCount as NativeScaler
 
 import models_mae
 

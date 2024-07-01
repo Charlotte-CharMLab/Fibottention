@@ -36,6 +36,8 @@ import torch.utils.checkpoint
 from torch.jit import Final
 import matplotlib.pyplot as plt
 import datetime
+import sys
+import os
 
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD, \
     OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
@@ -45,10 +47,11 @@ from timm.models._builder import build_model_with_cfg
 from timm.models._manipulate import named_apply, checkpoint_seq, adapt_input_conv
 from timm.models._registry import generate_default_cfgs, register_model, register_model_deprecations
 from extract_topk import extractK
-from util.plot_heatmap import plot_kqa , plot_hk , plot_ha , plot_hq , plot_svd
+from utils.plot_heatmap import plot_kqa , plot_hk , plot_ha , plot_hq , plot_svd
 __all__ = ['VisionTransformer']  # model_registry will add each entrypoint fn to this
 
-from ..Fibottention import get_mask_attn_wythoff, get_mask_attn_wythoff_shuffled
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from fibottention import get_mask_attn_wythoff
 
 _logger = logging.getLogger(__name__)
 
@@ -109,7 +112,7 @@ class Attention(nn.Module):
             attn = q @ k.transpose(-2, -1)
 
             if cache is None or last_epoch is None or last_epoch != epoch:
-                cache = get_mask_attn_wythoff(q, k)
+                cache = get_mask_attn_wythoff(q=q, k=k, modified_flag=False, depth_id=self.depth_id)
                 last_epoch = epoch
             
             attn = attn * (cache).float()
