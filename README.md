@@ -30,7 +30,7 @@ conda create --name env_name --no-default-packages python=3.7
 pip install -r requirements.txt
 ```
 
-To train the model, use the script.sh script which executes main_finetune.py with specified parameters.
+To train the model, use the script.sh file which executes main_finetune.py with specified parameters.
 
 ```bash
 ./script.sh [id] [out_dir] [model] [dataset] [classes] [device] [batch] [mask_ratio]
