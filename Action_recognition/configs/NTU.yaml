@@ -1,0 +1,49 @@
+TRAIN:
+  ENABLE: True
+  DATASET: Ntu
+  BATCH_SIZE: 16
+  EVAL_PERIOD: 5
+  CHECKPOINT_PERIOD: 10
+  CHECKPOINT_FILE_PATH: /path/to/kinetics/pretrained/model
+  AUTO_RESUME: False
+  FINETUNE :  True # Only use this if training base-timesformer with Kinetics pretraining. See defaults.py
+DATA:
+  PATH_LABEL_SEPARATOR: ','
+  PATH_TO_DATA_DIR: /path/to/data/ # Path to train/val/test csvs
+  NUM_FRAMES: 8
+  SAMPLING_RATE: 32
+  TRAIN_JITTER_SCALES: [256, 320]
+  TRAIN_CROP_SIZE: 224
+  TEST_CROP_SIZE: 224
+  INPUT_CHANNEL_NUM: [3]
+TIMESFORMER:
+  ATTENTION_TYPE: 'divided_space_time'
+  PRETRAINED_MODEL : ''
+SOLVER:
+  BASE_LR: 0.005
+  LR_POLICY: steps_with_relative_lrs
+  STEPS: [0, 11, 14]
+  LRS: [1, 0.1, 0.01]
+  MAX_EPOCH: 15
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 1e-4
+  OPTIMIZING_METHOD: sgd
+MODEL:
+  MODEL_NAME: vit_base_patch16_224
+  NUM_CLASSES: 19 # CHANGE THIS DEPENDING ON cross subject or cross view  VERSION YOU USE
+  ARCH: vit
+  LOSS_FUNC: cross_entropy
+  DROPOUT_RATE: 0.5
+TEST:
+  ENABLE: True
+  DATASET: Ntu
+  BATCH_SIZE: 16
+  NUM_ENSEMBLE_VIEWS: 1
+  #  NUM_SPATIAL_CROPS: 3
+DATA_LOADER:
+  NUM_WORKERS: 4
+  PIN_MEMORY: True
+NUM_GPUS: 8
+NUM_SHARDS: 1
+RNG_SEED: 0
+OUTPUT_DIR: ./
