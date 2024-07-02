@@ -60,6 +60,77 @@ This command will trigger the script with the specified parameters, initiating t
 ### Algorithm 1: Generating Fibonacci Sequence with Constraint
 
 ```python
+# INPUT: a, b, w_i  # Initial two numbers and upper constraint
+# OUTPUT: fib_seq  # Fibonacci sequence under constraint
+
+fib_seq = [a, b]  # Initialize sequence with first two numbers
+while fib_seq[-1] < w_i:  # Generate sequence until last number is less than w_i
+    next_num = fib_seq[-1] + fib_seq[-2]  # Calculate next Fibonacci number
+    fib_seq.append(next_num)  # Append new number to the sequence
+return fib_seq  # Return the generated Fibonacci sequence
+```
+
+### Algorithm 2: Generating Mask for All Heads
+```python
+# INPUT: L, N, w_min, w_max, is_modified  # Layer, size, window min/max, and modification flag
+# OUTPUT: Ω ∈ (0,1)^(h × (N+1) × (N+1))  # Output mask tensor
+
+phi = (1 + sqrt(5)) / 2  # Golden ratio for indexing
+for i in range(1, h + 1):  # Loop over each head
+    a = int(i * phi * phi)  # Fibonacci starting values based on golden ratio
+    b = int(i * phi * phi**2)
+    w_i = w_min + int((i - 1) * (w_max - w_min) / (h - 1))  # Window size for this head
+    Θ = [[0]*N for _ in range(N)]  # Initialize intermediate mask
+    I = getFibonacci(a, b, w_i)  # Calculate Fibonacci indices using Algorithm 1
+
+    if is_modified and i > 1:  # Modify sequence if required
+        I.extend([0, (a-i), 0, (i-1)])
+    
+    for o in I:  # Apply Fibonacci indices to mask
+        for j in range(N-o):
+            Θ[j][j+1] = 1  # Upper triangular masking
+        for k in range(o, N):
+            Θ[k+1][k] = 1  # Lower triangular masking
+    
+    Ω_i = [[1]*(N+1) for _ in range(N+1)]  # Initialize output mask for head i
+    for j in range(1, N+1):  # Fill in mask based on Θ
+        for k in range(1, N+1):
+            Ω_i[j][k] = Θ[j-1][k-1]
+
+Ω = [Ω_i for i in range(h)]  # Combine masks from all heads
+Ω = randomshuffle(L, Ω)  # Randomly shuffle masks across layers
+return Ω  # Return the final mask tensor
+```
+
+### Algorithm 3: Fibottention in a Single Vision Transformer Block
+```python
+# INPUT: X ∈ R^(N+1 × d)  # Input feature matrix
+# OUTPUT: O ∈ R^(N+1 × d)  # Output feature matrix
+# PARAMETERS: W_i^Q, W_i^K, W_i^V ∈ R^(d × d_h), d_h = d / h  # Weights for Q, K, V
+# HYPERPARAMETERS: w_min, w_max, is_modified  # Window sizes and modification flag
+
+iota_Ω = getMask(L, N, h, w_min, w_max, is_modified)  # Get mask from Algorithm 2
+
+for i in range(1, h + 1):  # Process each attention head
+    Q_i = X @ W_i^Q  # Query matrix
+    K_i = X @ W_i^K  # Key matrix
+    V_i = X @ W_i^V  # Value matrix
+    A_i = Q_i @ K_i.T  # Attention scores
+    A_i_Ω = np.sign(A_i) * (np.abs(A_i) * iota_Ω[i,:,:])  # Apply mask to attention scores
+    A_i_Ω = softmax(A_i_Ω)  # Softmax to normalize scores
+    Z_i = A_i_Ω @ V_i  # Weighted sum to produce output for head
+
+Z = np.concatenate([Z_i for i in range(h)], axis=1)  # Concatenate outputs from all heads
+O = Z @ W^Z  # Project concatenated outputs to final dimension
+return O  # Return output of Vision Transformer block
+```
+
+<!--
+## Algorithms
+
+### Algorithm 1: Generating Fibonacci Sequence with Constraint
+
+```python
 def getFibonacci(a, b, w_i):
     fib_seq = [a, b]
     while fib_seq[-1] < w_i:
@@ -130,6 +201,7 @@ def fibottention(X, W_Q, W_K, W_V, d_h, wmin, wmax, is_modified):
     
     return O  # Return the final output
 ```
+-->
 
 <br>
 
