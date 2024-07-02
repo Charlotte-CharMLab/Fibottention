@@ -98,16 +98,19 @@ def train_epoch(
         if cfg.MIXUP.ENABLED:
             labels = hard_labels
 
-        # check Nan Loss.
+        # Check Nan Loss.
         misc.check_nan_losses(loss)
 
 
         if cur_global_batch_size >= cfg.GLOBAL_BATCH_SIZE:
+
             # Perform the backward pass.
             optimizer.zero_grad()
             loss.backward()
+
             # Update the parameters.
             optimizer.step()
+            
         else:
             if cur_iter == 0:
                 optimizer.zero_grad()
@@ -125,7 +128,8 @@ def train_epoch(
 
             # Update and log stats.
             train_meter.update_stats(None, None, None, loss, lr)
-            # write to tensorboard format if available.
+
+            # Write to tensorboard format if available.
             if writer is not None:
                 writer.add_scalars(
                     {"Train/loss": loss, "Train/lr": lr},

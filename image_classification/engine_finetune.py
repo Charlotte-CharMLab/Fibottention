@@ -21,14 +21,15 @@ from timm.utils import accuracy
 import utils.misc as misc
 import utils.lr_sched as lr_sched
 
+
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, loss_scaler, max_norm: float = 0,
                     mixup_fn: Optional[Mixup] = None, log_writer=None,
-                    args=None,mask_q=None,mask_k=None,mask_attn=None):
-                    # >>>>>>>>>>>>>>>>> Subhajit's Implementation
-                    # args=None,mask_q=None,mask_k=None,mask_attn=None,mask_act=None,mask_ratio=0.0):
-                    # >>>>>>>>>>>>>>>>> Subhajit's Implementation
+                    args=None, mask_q=None, mask_k=None, mask_attn=None):
+    # >>>>>>>>>>>>>>>>> Subhajit's Implementation
+    # args=None,mask_q=None,mask_k=None,mask_attn=None,mask_act=None,mask_ratio=0.0):
+    # >>>>>>>>>>>>>>>>> Subhajit's Implementation
     model.train(True)
     metric_logger = misc.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', misc.SmoothedValue(window_size=1, fmt='{value:.6f}'))
@@ -50,13 +51,13 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         samples = samples.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
-        
+
         if mixup_fn is not None:
             samples, targets = mixup_fn(samples, targets)
 
-        estep = (epoch , data_iter_step)
+        estep = (epoch, data_iter_step)
         with torch.cuda.amp.autocast():
-            outputs = model(samples,mask_q,mask_k,mask_attn,estep)
+            outputs = model(samples, mask_q, mask_k, mask_attn, estep)
             loss = criterion(outputs, targets)
 
         loss_value = loss.item()
@@ -116,7 +117,7 @@ def evaluate(data_loader, model, device, mask_q, mask_k, mask_attn):
         target = target.to(device, non_blocking=True)
 
         # compute output
-        estep = (None , None)
+        estep = (None, None)
         with torch.cuda.amp.autocast():
             output = model(images, mask_q, mask_k, mask_attn, estep)
             loss = criterion(output, target)
@@ -134,8 +135,9 @@ def evaluate(data_loader, model, device, mask_q, mask_k, mask_attn):
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
+
 @torch.no_grad()
-def evaluate_results(data_loader, model, device,mask_q,mask_k,mask_attn):
+def evaluate_results(data_loader, model, device, mask_q, mask_k, mask_attn):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")
@@ -154,9 +156,9 @@ def evaluate_results(data_loader, model, device,mask_q,mask_k,mask_attn):
         target = target.to(device, non_blocking=True)
 
         # compute output
-        estep = (None , None)
+        estep = (None, None)
         with torch.cuda.amp.autocast():
-            output = model(images,mask_q,mask_k,mask_attn,estep)
+            output = model(images, mask_q, mask_k, mask_attn, estep)
             loss = criterion(output, target)
 
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
@@ -175,10 +177,11 @@ def evaluate_results(data_loader, model, device,mask_q,mask_k,mask_attn):
         metric_logger.update(loss=loss.item())
         metric_logger.meters['acc1'].update(acc1.item(), n=batch_size)
         metric_logger.meters['acc5'].update(acc5.item(), n=batch_size)
-        
+
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print('* Acc@1 {top1.global_avg:.3f} Acc@5 {top5.global_avg:.3f} loss {losses.global_avg:.3f}'
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
 
-    return {k: meter.global_avg for k, meter in metric_logger.meters.items()}, {'pred':result_tensor, 'target':target_tensor}
+    return {k: meter.global_avg for k, meter in metric_logger.meters.items()}, {'pred': result_tensor,
+                                                                                'target': target_tensor}

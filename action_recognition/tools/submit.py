@@ -89,7 +89,8 @@ def launch(shard_id, num_shards, cfg, init_method):
     ])
 
     train, test = get_func(cfg)
-    # Launch job.
+
+    # Launching the job
     if cfg.TRAIN.ENABLE:
         launch_job(cfg=cfg, init_method=init_method, func=train)
 
@@ -106,7 +107,6 @@ class Trainer(object):
         socket_name = os.popen("ip r | grep default | awk '{print $5}'").read().strip('\n')
         print("Setting GLOO and NCCL sockets IFNAME to: {}".format(socket_name))
         os.environ["GLOO_SOCKET_IFNAME"] = socket_name
-        # not sure if the next line is really affect anything
         os.environ["NCCL_SOCKET_IFNAME"] = socket_name
 
 
@@ -158,11 +158,11 @@ def main():
     args.output_dir = str(args.job_dir)
     args.job_dir = Path(args.job_dir) / "%j"
 
-    # Note that the folder will depend on the job_id, to easily track experiments
-    #executor = submitit.AutoExecutor(folder=Path(args.job_dir) / "%j", slurm_max_num_timeout=30)
+    # Note that the folder will depend on the job_id, to easily track experiments.
+    # executor = submitit.AutoExecutor(folder=Path(args.job_dir) / "%j", slurm_max_num_timeout=30)
     executor = submitit.AutoExecutor(folder=args.job_dir, slurm_max_num_timeout=30)
 
-    # cluster setup is defined by environment variables
+    # Cluster setup is defined by environment variables.
     num_gpus_per_node = args.num_gpus
     nodes = args.num_shards
     partition = args.partition

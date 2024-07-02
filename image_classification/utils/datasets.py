@@ -20,21 +20,18 @@ from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 def build_dataset(is_train, args):
     transform = build_transform(is_train, args)
 
-    #root = os.path.join(args.data_path, 'train' if is_train else 'val')
-    #dataset = datasets.ImageFolder(root, transform=transform)
     if args.dataset == "c10":
         dataset = torchvision.datasets.CIFAR10(
             root='./data', train=is_train, download=True, transform=transform)
-    elif args.dataset == "c100":   
+    elif args.dataset == "c100":
         dataset = torchvision.datasets.CIFAR100(
             root='./data', train=is_train, download=True, transform=transform)
     elif args.dataset == "tinyimagenet":
         root = os.path.join('../../imagenet-tiny', 'train' if is_train else 'val')
         dataset = datasets.ImageFolder(root, transform=transform)
-    # elif args.dataset == "imagenet":
-    #     dataset = torchvision.datasets.ImageNet(
-    #         root: './data', train=is_train, download=True, transform=transform)
-    # print(dataset)
+    elif args.dataset == "imagenet":
+        dataset = torchvision.datasets.ImageNet(
+            root='./data', train=is_train, download=True, transform=transform)
     return dataset
 
 
@@ -45,15 +42,12 @@ def build_transform(is_train, args):
         mean = (0.4914, 0.4822, 0.4465)
         std = (0.2023, 0.1994, 0.2010)
     elif args.dataset == "c100":
-        mean = (0.5071 ,0.4865 ,0.4409)
-        std = (0.2009 ,0.1984 ,0.2023)
-    # elif args.dataset == "tinyimagenet":
-    #     mean =(0.485, 0.456, 0.406) 
-    #     std = (0.229, 0.224, 0.225)    
-    # elif args.dataset == "tinyimagenet":
-    #     mean = IMAGENET_DEFAULT_MEAN
-    #     std = IMAGENET_DEFAULT_STD
-    
+        mean = (0.5071, 0.4865, 0.4409)
+        std = (0.2009, 0.1984, 0.2023)
+    elif args.dataset == "tinyimagenet":
+        mean = IMAGENET_DEFAULT_MEAN
+        std = IMAGENET_DEFAULT_STD
+
     # train transform
     if is_train:
         # this should always dispatch to transforms_imagenet_train
@@ -86,5 +80,3 @@ def build_transform(is_train, args):
     t.append(transforms.ToTensor())
     t.append(transforms.Normalize(mean, std))
     return transforms.Compose(t)
-
-

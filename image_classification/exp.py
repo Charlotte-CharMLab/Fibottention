@@ -1,12 +1,5 @@
 import torch
 import einops
-import numpy as np
-import math
-import time
-import random
-
-import torch
-import einops
 
 def get_mask(mask_ratio,batch_size,heads,num_patches,embed_dim):
   

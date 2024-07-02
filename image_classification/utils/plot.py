@@ -3,162 +3,86 @@ import json
 import torch
 import numpy as np
 
-# # List to store accuracy data from each file
-all_test_acc = []
+def plot_attention_mask_for_all_heads(attn):
+    batch_index = 0
+    num_heads = attn.shape[1]
 
-# File paths to your text files
-file_paths = ['../baseline_100/log.txt', '../kqdde_40_100/log.txt' ,'../kqdde_60_100/log.txt','../kqdde_80_100/log.txt']
-file_names = ["Baseline", "kqdde_40","kqdde_60","kqdde_80"]
+    fig, axes = plt.subplots(3, 4, figsize=(15, 10))
+    axes = axes.flatten()
 
-# Loop through each file
-for file_path in file_paths:
-    epochs = []
-    test_acc1 = []
-    # Read the file and extract data
-    with open(file_path, 'r') as file:
-        for line in file:
-            if line.strip():  # Check if the line is not empty
-                json_data = json.loads(line)
-                epochs.append(json_data['epoch'])
-                test_acc1.append(json_data['test_acc1'])
+    for head_index in range(num_heads):
+        attn_cpu = attn[batch_index, head_index].cpu()
+        ax = axes[head_index]
+        im = ax.imshow(attn_cpu, cmap='hot', interpolation='nearest')
+        ax.set_title(f'Head {head_index + 1}')
+        ax.axis('off')
 
-    # Append the test accuracy values to the global array
-    all_test_acc.append(test_acc1)
+    fig.colorbar(im, ax=axes.ravel().tolist(), orientation='vertical', shrink=0.6)
+    plt.suptitle('Heatmaps of Mask Matrices for All Heads')
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.savefig(f'plots/all_heads_{current_time}.png')
+    plt.close()
 
-# Convert the list of arrays to a NumPy array
-all_test_acc_np = np.array(all_test_acc)
+def plot_attention_mask_for_all_batches(attn):
+    for batch_index in range(attn.size(0)):
+        data = attn[batch_index].cpu().detach()
 
-# # Calculate mean and standard deviation across files
-mean_acc = all_test_acc_np.mean(axis=0)
-std_acc = all_test_acc_np.std(axis=0)
+        fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
+        axes = axes.flatten()
 
-# Plotting the graph with different line styles for each file
-fig, ax = plt.subplots(1)
-for i in range(len(file_names)):
-    ax.plot(epochs, all_test_acc_np[i], label = file_names[i],linestyle='-')
-    
-#ax.plot(epochs, mean_acc, lw=2, label='Mean Test Accuracy', color='black', linestyle='--')
-# ax.fill_between(epochs, all_test_acc_np[0], all_test_acc_np[1], color='C0', alpha=0.4 , label = "between base & 40%")
-# ax.fill_between(epochs, all_test_acc_np[1], all_test_acc_np[2], color='C1', alpha=0.4 , label = "between 40% & 60%")
-# ax.fill_between(epochs, all_test_acc_np[2], all_test_acc_np[3], color='C2', alpha=0.4 , label = "between 60% & 80%")
-ax.set_title('CIFAR-100 - Random Masking ' , fontsize = 15)
-ax.legend(loc='lower right')
-ax.set_xlabel('Epochs', fontsize = 15)
-ax.set_ylabel('Test Accuracy' , fontsize = 15)
-ax.grid()
+        for i, ax in enumerate(axes):
+            heatmap = ax.imshow(data[i], cmap='viridis', interpolation='nearest')
+            ax.set_title(f'Head {i + 1}')
+            ax.axis('off')
 
-# Save the graph as an image file (e.g., PNG)
-plt.savefig('cifar_100_kqdde.png')
+        fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
 
-# Show the plot
-plt.show()
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        plt.savefig(f'plots/mask_heatmap_batch{batch_index + 1}_{current_time}.png')
+        plt.close()
 
-# # List to store accuracy data from each file
-all_test_acc = []
+def plot_attention_heatmap_for_all_batches(attn):
+    for batch_index in range(attn.size(0)):
+        data = attn[batch_index].cpu().detach()
+        fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
+        axes = axes.flatten()
 
-# File paths to your text files
-file_paths = ['../baseline_10/log.txt', '../log_kqdde40.txt', '../log_kqdde60.txt','../log_kqdde80.txt',]
-file_names = ["Baseline", "kqdde40", "kqdde60",'kqdde80']
+        for i, ax in enumerate(axes):
+            heatmap = ax.imshow(data[i], cmap='viridis', interpolation='nearest')
+            ax.set_title(f'Head {i + 1}')
+            ax.axis('off')
 
-# Loop through each file
-for file_path in file_paths:
-    epochs = []
-    test_acc1 = []
-    # Read the file and extract data
-    with open(file_path, 'r') as file:
-        for line in file:
-            if line.strip():  # Check if the line is not empty
-                json_data = json.loads(line)
-                epochs.append(json_data['epoch'])
-                test_acc1.append(json_data['test_acc1'])
+        fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        plt.savefig(f'plots/cifar100/qkT_heatmap/batch{batch_index + 1}_{current_time}.png')
+        plt.close()
 
-    # Append the test accuracy values to the global array
-    all_test_acc.append(test_acc1)
+def plot_total_aggregated_attention_heatmap(attn):
+    total_mean_attn = attn.mean(dim=[0, 1]).cpu().detach()
 
-# Convert the list of arrays to a NumPy array
-all_test_acc_np = np.array(all_test_acc)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    heatmap = ax.imshow(total_mean_attn, cmap='viridis', interpolation='nearest')
+    ax.set_title('Aggregated Attention Map')
+    ax.axis('off')
+    fig.colorbar(heatmap, ax=ax, shrink=0.95)
 
-# # # Calculate mean and standard deviation across files
-# mean_acc = all_test_acc_np.mean(axis=0)
-# std_acc = all_test_acc_np.std(axis=0)
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
+    plt.close()
 
-# Plotting the graph with different line styles for each file
-fig, ax = plt.subplots(1)
-for i in range(len(file_names)):
-    ax.plot(epochs, all_test_acc_np[i], label = file_names[i],linestyle='-')
-    
-#ax.plot(epochs, mean_acc, lw=2, label='Mean Test Accuracy', color='black', linestyle='--')
-# ax.fill_between(epochs, all_test_acc_np[0], all_test_acc_np[1], color='C0', alpha=0.4 , label = "between base & 40%")
-# ax.fill_between(epochs, all_test_acc_np[1], all_test_acc_np[2], color='C1', alpha=0.4 , label = "between 40% & 60%")
-# ax.fill_between(epochs, all_test_acc_np[2], all_test_acc_np[3], color='C2', alpha=0.4 , label = "between 60% & 80%")
-ax.set_title('CIFAR-10 With Random Masking', fontsize = 15)
-ax.legend(loc='lower right')
-ax.set_xlabel('Epochs', fontsize = 15)
-ax.set_ylabel('Test Accuracy' , fontsize = 15)
-ax.grid()
+def plot_attention_heatmap_for_all_heads(attn):
+    mean_attn = attn.mean(dim=0).cpu().detach()
 
-# Save the graph as an image file (e.g., PNG)
-plt.savefig('cifar_10_kqdde.png')
+    fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
+    axes = axes.flatten()
 
-# Show the plot
-plt.show()
+    for i, ax in enumerate(axes):
+        heatmap = ax.imshow(mean_attn[i], cmap='viridis', interpolation='nearest')
+        ax.set_title(f'Head {i + 1}')
+        ax.axis('off')
 
-# # Plotting the graph
-# fig, ax = plt.subplots(1)
-# ax.plot(epochs, mean_acc, lw=2, label='Mean Test Accuracy')
-# ax.plot(epochs, all_test_acc_np[0], lw=2, label='Test Accuracy')
-# ax.fill_between(epochs, 0, mean_acc, where=(mean_acc > 0), color='C0', alpha=0.4)
-# ax.fill_between(epochs, 0, all_test_acc_np[0], where=(all_test_acc_np[0] > 0), color='C1', alpha=0.4)
-# ax.set_title('Test Accuracy with $\pm \sigma$ Interval Across Files')
-# ax.legend(loc='upper left')
-# ax.set_xlabel('Epochs')
-# ax.set_ylabel('Test Accuracy')
-# ax.grid()
+    fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
 
-# # Save the graph as an image file (e.g., PNG)
-# plt.savefig('test_accuracy_plot.png')
-
-# # Show the plot
-# plt.show()
-
-
-
-# Create a sample PyTorch tensor with size 197x64
-# Create a sample PyTorch tensor with size 197x64 and values between 0 and 255
-
-# import torch
-# import matplotlib.pyplot as plt
-# from sklearn.manifold import TSNE
-
-# # Generate twelve sample PyTorch tensors with size (197, 64) and values between 0 and 255
-# num_tensors = 12
-# tensors = [torch.randint(low=0, high=256, size=(197, 64), dtype=torch.float32) for _ in range(num_tensors)]
-
-# # Concatenate the tensors along a new dimension (e.g., create a 3D tensor)
-# combined_data = torch.stack(tensors, dim=0)
-
-# # Flatten the combined tensor along the batch dimension
-# flattened_data = combined_data.view(-1, 64)
-
-# # Perform t-SNE to reduce dimensionality to 2D
-# tsne = TSNE(n_components=2)
-# data_tsne = tsne.fit_transform(flattened_data)
-
-# # Plot the 2D t-SNE representation for each tensor
-# colors = plt.cm.rainbow([i / float(num_tensors) for i in range(num_tensors)])
-# for i in range(num_tensors):
-#     start_index = i * combined_data.size(1)
-#     end_index = (i + 1) * combined_data.size(1)
-#     plt.scatter(data_tsne[start_index:end_index, 0], data_tsne[start_index:end_index, 1], label=f'Tensor {i}', color=colors[i])
-
-# plt.title('t-SNE Visualization of PyTorch Tensors')
-# plt.xlabel('Dimension 1')
-# plt.ylabel('Dimension 2')
-# plt.legend()
-# plt.show()
-
-
-
-
-
-
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
+    plt.close()

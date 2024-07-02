@@ -16,9 +16,11 @@ import torch.nn as nn
 
 import vision_transformer
 
+
 class VisionTransformer(vision_transformer.VisionTransformer):
     """ Vision Transformer with support for global average pooling
     """
+
     def __init__(self, global_pool=False, **kwargs):
         super(VisionTransformer, self).__init__(**kwargs)
 
@@ -29,7 +31,7 @@ class VisionTransformer(vision_transformer.VisionTransformer):
             self.fc_norm = norm_layer(embed_dim)
 
             del self.norm  # remove the original norm
-    
+
     def forward_features(self, x, mask_q, mask_k, mask_attn, estep):
         B = x.shape[0]
         x = self.patch_embed(x)
@@ -38,7 +40,7 @@ class VisionTransformer(vision_transformer.VisionTransformer):
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.pos_drop(x)
-        
+
         for blk in self.blocks:
             x = blk(x, mask_q, mask_k, mask_attn, estep)
 
@@ -50,6 +52,7 @@ class VisionTransformer(vision_transformer.VisionTransformer):
             outcome = x[:, 0]
 
         return outcome
+
 
 def vit_tiny_patch16(**kwargs):
     model = VisionTransformer(
@@ -77,6 +80,7 @@ def vit_huge_patch14(**kwargs):
         patch_size=14, embed_dim=1280, depth=32, num_heads=16, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
     return model
+
 
 mae_vit_tiny = vit_tiny_patch16
 mae_vit_base = vit_base_patch16

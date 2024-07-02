@@ -46,8 +46,8 @@ from timm.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_,
 from timm.models._builder import build_model_with_cfg
 from timm.models._manipulate import named_apply, checkpoint_seq, adapt_input_conv
 from timm.models._registry import generate_default_cfgs, register_model, register_model_deprecations
-from extract_topk import extractK
-from utils.plot_heatmap import plot_kqa , plot_hk , plot_ha , plot_hq , plot_svd
+from utils.plot import plot_attention_mask_for_all_heads, plot_attention_mask_for_all_batches, plot_attention_heatmap_for_all_heads, plot_attention_heatmap_for_all_batches
+
 __all__ = ['VisionTransformer']  # model_registry will add each entrypoint fn to this
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -55,10 +55,11 @@ from fibottention import get_mask_attn_wythoff
 
 _logger = logging.getLogger(__name__)
 
-hp_draw = True 
+hp_draw = True
 idx = 0
 cache = None
 last_epoch = None
+
 
 class Attention(nn.Module):
     fused_attn: Final[bool]
@@ -73,7 +74,7 @@ class Attention(nn.Module):
             attn_drop=0.,
             proj_drop=0.,
             norm_layer=nn.LayerNorm,
-            depth_id = 0
+            depth_id=0
     ):
         super().__init__()
         assert dim % num_heads == 0, 'dim should be divisible by num_heads'
@@ -92,11 +93,11 @@ class Attention(nn.Module):
         self.mask_flags = True
 
     def forward(self, x, mask_q, mask_k, mask_attn, estep):
-        global hp_draw , idx, cache, last_epoch
+        global hp_draw, idx, cache, last_epoch
         B, N, C = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dim).permute(2, 0, 3, 1, 4)
         q, k, v = qkv.unbind(0)
-        
+
         q, k = self.q_norm(q), self.k_norm(k)
 
         if self.fused_attn:
@@ -106,112 +107,28 @@ class Attention(nn.Module):
             )
         else:
             q = q * self.scale
-            
-            epoch, step =  estep
+
+            epoch, step = estep
 
             attn = q @ k.transpose(-2, -1)
 
             if cache is None or last_epoch is None or last_epoch != epoch:
                 cache = get_mask_attn_wythoff(q=q, k=k, modified_flag=False, depth_id=self.depth_id)
                 last_epoch = epoch
-            
+
             attn = attn * (cache).float()
 
             attn = attn.softmax(dim=-1)
-            
+
             attn = self.attn_drop(attn)
             x = attn @ v
 
         x = x.transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
-        
+
         x = self.proj_drop(x)
-        return x    
+        return x
 
-def plot_attention_mask_for_all_heads(attn):
-    batch_index = 0
-    num_heads = attn.shape[1]
-    
-    fig, axes = plt.subplots(3, 4, figsize=(15, 10))
-    axes = axes.flatten()
-    
-    for head_index in range(num_heads):
-        attn_cpu = attn[batch_index, head_index].cpu()
-        ax = axes[head_index]
-        im = ax.imshow(attn_cpu, cmap='hot', interpolation='nearest')
-        ax.set_title(f'Head {head_index + 1}')
-        ax.axis('off')
-    
-    fig.colorbar(im, ax=axes.ravel().tolist(), orientation='vertical', shrink=0.6)
-    plt.suptitle('Heatmaps of Mask Matrices for All Heads')
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/all_heads_{current_time}.png')
-    plt.close()
-
-def plot_attention_mask_for_all_batches(attn):
-    for batch_index in range(attn.size(0)):
-        data = attn[batch_index].cpu().detach()
-
-        fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
-        axes = axes.flatten()
-
-        for i, ax in enumerate(axes):
-            heatmap = ax.imshow(data[i], cmap='viridis', interpolation='nearest')
-            ax.set_title(f'Head {i+1}')
-            ax.axis('off')
-
-        fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
-
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        plt.savefig(f'plots/mask_heatmap_batch{batch_index+1}_{current_time}.png')
-        plt.close()
-
-def plot_attention_heatmap_for_all_batches(attn):
-    for batch_index in range(attn.size(0)):
-        data = attn[batch_index].cpu().detach()
-        fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
-        axes = axes.flatten()
-        
-        for i, ax in enumerate(axes):
-            heatmap = ax.imshow(data[i], cmap='viridis', interpolation='nearest')
-            ax.set_title(f'Head {i+1}')
-            ax.axis('off')
-        
-        fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        plt.savefig(f'plots/cifar100/qkT_heatmap/batch{batch_index+1}_{current_time}.png')
-        plt.close()
-
-def plot_total_aggregated_attention_heatmap(attn):
-    total_mean_attn = attn.mean(dim=[0, 1]).cpu().detach()
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    heatmap = ax.imshow(total_mean_attn, cmap='viridis', interpolation='nearest')
-    ax.set_title('Aggregated Attention Map')
-    ax.axis('off')
-    fig.colorbar(heatmap, ax=ax, shrink=0.95)
-
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
-    plt.close()
-
-def plot_attention_heatmap_for_all_heads(attn):
-    mean_attn = attn.mean(dim=0).cpu().detach()
-
-    fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
-    axes = axes.flatten()
-
-    for i, ax in enumerate(axes):
-        heatmap = ax.imshow(mean_attn[i], cmap='viridis', interpolation='nearest')
-        ax.set_title(f'Head {i+1}')
-        ax.axis('off')
-
-    fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
-
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
-    plt.close()
-    
 class LayerScale(nn.Module):
     def __init__(self, dim, init_values=1e-5, inplace=False):
         super().__init__()
@@ -238,7 +155,7 @@ class Block(nn.Module):
             act_layer=nn.GELU,
             norm_layer=nn.LayerNorm,
             mlp_layer=Mlp,
-            depth_id = 0
+            depth_id=0
     ):
         super().__init__()
         self.norm1 = norm_layer(dim)
@@ -251,7 +168,7 @@ class Block(nn.Module):
             attn_drop=attn_drop,
             proj_drop=proj_drop,
             norm_layer=norm_layer,
-            depth_id = depth_id
+            depth_id=depth_id
         )
         self.ls1 = LayerScale(dim, init_values=init_values) if init_values else nn.Identity()
         self.drop_path1 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -266,11 +183,12 @@ class Block(nn.Module):
         self.ls2 = LayerScale(dim, init_values=init_values) if init_values else nn.Identity()
         self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
 
-    def forward(self, x,mask_q,mask_k,mask_attn,estep):
-        x = x + self.drop_path1(self.ls1(self.attn(self.norm1(x), mask_q, mask_k, mask_attn, estep)))        
+    def forward(self, x, mask_q, mask_k, mask_attn, estep):
+        x = x + self.drop_path1(self.ls1(self.attn(self.norm1(x), mask_q, mask_k, mask_attn, estep)))
         x = x + self.drop_path2(self.ls2(self.mlp(self.norm2(x))))
 
         return x
+
 
 class ResPostBlock(nn.Module):
 
@@ -427,6 +345,7 @@ class ParallelThingsBlock(nn.Module):
     Based on:
       `Three things everyone should know about Vision Transformers` - https://arxiv.org/abs/2203.09795
     """
+
     def __init__(
             self,
             dim,
@@ -586,7 +505,7 @@ class VisionTransformer(nn.Module):
             dynamic_img_pad=dynamic_img_pad,
             **embed_args,
         )
-        
+
         num_patches = self.patch_embed.num_patches
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim)) if class_token else None
         embed_len = num_patches if no_embed_class else num_patches + self.num_prefix_tokens
@@ -616,7 +535,7 @@ class VisionTransformer(nn.Module):
                 norm_layer=norm_layer,
                 act_layer=act_layer,
                 mlp_layer=mlp_layer,
-                depth_id = i # Added depth_id
+                depth_id=i  # Added depth_id
             )
             for i in range(depth)])
         self.norm = norm_layer(embed_dim) if not use_fc_norm else nn.Identity()
@@ -764,10 +683,11 @@ class VisionTransformer(nn.Module):
         x = self.head_drop(x)
         return x if pre_logits else self.head(x)
 
-    def forward(self, x,mask_q,mask_k,mask_attn,estep):
-        x = self.forward_features(x,mask_q,mask_k,mask_attn,estep)
+    def forward(self, x, mask_q, mask_k, mask_attn, estep):
+        x = self.forward_features(x, mask_q, mask_k, mask_attn, estep)
         x = self.forward_head(x)
         return x
+
 
 def init_weights_vit_timm(module: nn.Module, name: str = ''):
     """ ViT weight initialization, original timm impl (for reproducibility) """
@@ -1266,7 +1186,7 @@ default_cfgs = generate_default_cfgs({
         url='https://dl.fbaipublicfiles.com/dino/dino_vitbase8_pretrain/dino_vitbase8_pretrain.pth',
         hf_hub_id='timm/',
         mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD, num_classes=0),
-    
+
     # DINOv2 pretrained - https://arxiv.org/abs/2304.07193 (no classifier head, for fine-tune/features only)
     'vit_small_patch14_dinov2.lvd142m': _cfg(
         url='https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth',
@@ -1412,7 +1332,7 @@ default_cfgs = generate_default_cfgs({
         mean=OPENAI_CLIP_MEAN, std=OPENAI_CLIP_STD, crop_pct=1.0),
 
     'vit_base_patch32_clip_224.laion2b_ft_in12k': _cfg(
-        #hf_hub_id='timm/vit_base_patch32_clip_224.laion2b_ft_in12k',  # FIXME weight exists, need to push
+        # hf_hub_id='timm/vit_base_patch32_clip_224.laion2b_ft_in12k',  # FIXME weight exists, need to push
         mean=OPENAI_CLIP_MEAN, std=OPENAI_CLIP_STD, num_classes=11821),
     'vit_base_patch16_clip_224.laion2b_ft_in12k': _cfg(
         hf_hub_id='timm/',
@@ -1586,7 +1506,7 @@ default_cfgs = generate_default_cfgs({
         hf_hub_id='timm/',
         license='cc-by-nc-4.0',
         mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD, num_classes=0),
-    
+
     'vit_huge_patch14_224_ijepa.in1k': _cfg(
         url='https://dl.fbaipublicfiles.com/ijepa/IN1K-vit.h.14-300e.pth.tar',
         # hf_hub_id='timm/',
@@ -1805,7 +1725,7 @@ def vit_huge_patch14_224(pretrained=False, **kwargs) -> VisionTransformer:
 def vit_giant_patch14_224(pretrained=False, **kwargs) -> VisionTransformer:
     """ ViT-Giant (little-g) model (ViT-g/14) from `Scaling Vision Transformers` - https://arxiv.org/abs/2106.04560
     """
-    model_args = dict(patch_size=14, embed_dim=1408, mlp_ratio=48/11, depth=40, num_heads=16)
+    model_args = dict(patch_size=14, embed_dim=1408, mlp_ratio=48 / 11, depth=40, num_heads=16)
     model = _create_vision_transformer('vit_giant_patch14_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
 
@@ -1814,7 +1734,7 @@ def vit_giant_patch14_224(pretrained=False, **kwargs) -> VisionTransformer:
 def vit_gigantic_patch14_224(pretrained=False, **kwargs) -> VisionTransformer:
     """ ViT-Gigantic (big-G) model (ViT-G/14) from `Scaling Vision Transformers` - https://arxiv.org/abs/2106.04560
     """
-    model_args = dict(patch_size=14, embed_dim=1664, mlp_ratio=64/13, depth=48, num_heads=16)
+    model_args = dict(patch_size=14, embed_dim=1664, mlp_ratio=64 / 13, depth=48, num_heads=16)
     model = _create_vision_transformer(
         'vit_gigantic_patch14_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
@@ -1977,7 +1897,8 @@ def vit_giant_patch14_clip_224(pretrained=False, **kwargs) -> VisionTransformer:
     Pretrained weights from CLIP image tower.
     """
     model_args = dict(
-        patch_size=14, embed_dim=1408, mlp_ratio=48/11, depth=40, num_heads=16, pre_norm=True, norm_layer=nn.LayerNorm)
+        patch_size=14, embed_dim=1408, mlp_ratio=48 / 11, depth=40, num_heads=16, pre_norm=True,
+        norm_layer=nn.LayerNorm)
     model = _create_vision_transformer(
         'vit_giant_patch14_clip_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
@@ -1989,10 +1910,12 @@ def vit_gigantic_patch14_clip_224(pretrained=False, **kwargs) -> VisionTransform
     Pretrained weights from CLIP image tower.
     """
     model_args = dict(
-        patch_size=14, embed_dim=1664, mlp_ratio=64/13, depth=48, num_heads=16, pre_norm=True, norm_layer=nn.LayerNorm)
+        patch_size=14, embed_dim=1664, mlp_ratio=64 / 13, depth=48, num_heads=16, pre_norm=True,
+        norm_layer=nn.LayerNorm)
     model = _create_vision_transformer(
         'vit_gigantic_patch14_clip_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
+
 
 # Experimental models below
 
@@ -2195,7 +2118,7 @@ def vit_giant_patch14_dinov2(pretrained=False, **kwargs) -> VisionTransformer:
     # With SwiGLUPacked, we need to set hidden_features = 2 * 4096 = 8192
 
     model_args = dict(
-        patch_size=14, embed_dim=1536, depth=40, num_heads=24, init_values=1e-5, 
+        patch_size=14, embed_dim=1536, depth=40, num_heads=24, init_values=1e-5,
         mlp_ratio=2.66667 * 2, mlp_layer=SwiGLUPacked, img_size=518, act_layer=nn.SiLU
     )
     model = _create_vision_transformer(
@@ -2228,7 +2151,7 @@ def vit_huge_patch16_448_ijepa(pretrained=False, **kwargs) -> VisionTransformer:
 def vit_gigantic_patch16_224_ijepa(pretrained=False, **kwargs) -> VisionTransformer:
     """ ViT-Gigantic (big-G) model (ViT-G/16) from `I-JEPA - https://arxiv.org/abs/2301.08243
     """
-    model_args = dict(patch_size=16, embed_dim=1664, mlp_ratio=64/13, depth=48, num_heads=16)
+    model_args = dict(patch_size=16, embed_dim=1664, mlp_ratio=64 / 13, depth=48, num_heads=16)
     model = _create_vision_transformer(
         'vit_gigantic_patch16_224_ijepa', pretrained=pretrained, **dict(model_args, **kwargs))
     return model

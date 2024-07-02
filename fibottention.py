@@ -1,3 +1,13 @@
+# Copyright (c) Charlotte-CharMLab at UNC Charlotte.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+# --------------------------------------------------------
+# References:
+# DeiT: https://github.com/Charlotte-CharMLab/Fibottention
+# --------------------------------------------------------
+
 import torch
 import math
 import random
