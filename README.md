@@ -60,7 +60,7 @@ This command will trigger the script with the specified parameters, initiating t
 #### Install dependencies 
 
 - torchvision: `pip install torchvision` or `conda install torchvision -c pytorch`
-- [fvcore](https://github.com/facebookresearch/fvcore/): `pip install 'git+https://github.com/facebookresearch/fvcore'`
+- fvcore: `pip install 'git+https://github.com/facebookresearch/fvcore'`
 - simplejson: `pip install simplejson`
 - einops: `pip install einops`
 - timm: `pip install timm`
