@@ -22,7 +22,9 @@ Visual perception tasks are predominantly solved by Vision Transformer (ViT) arc
 
 <br>
 
-## Installation and training of Fibottention for image classification tasks:
+## Installation and training of Fibottention 
+
+### Image classification tasks:
 
 Use the commands below to install the required packages when setting up your environment:
 ```
@@ -55,7 +57,7 @@ This command will trigger the script with the specified parameters, initiating t
 
 <br>
 
-## Action Recognition Task
+### Action Recognition Task
 
 Please follow the instructions [here](action_recognition/install.md) to install the dependecies to  run fibottention on action recognition tasks.
 
