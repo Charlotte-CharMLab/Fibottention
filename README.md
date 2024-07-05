@@ -55,6 +55,11 @@ This command will trigger the script with the specified parameters, initiating t
 
 <br>
 
+## Action Recognition Task
+
+Please follow the instructions [here](action_recognition.md).
+
+
 ## Algorithms
 
 ### Algorithm 1: Generating Fibonacci Sequence with Constraint
