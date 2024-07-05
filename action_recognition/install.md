@@ -21,14 +21,22 @@ conda activate fiboar
 
 # DataSet preparation
 The dataset could be structured as follows:
-
+```
 ├── data
     ├── Action_01
         ├── Video_01.mp4
         ├── Video_02.mp4
         ├── …
-
+```
 After all the data is prepared, resize and crop the video to person-centric to get rid of background noise. Then, prepare the CSV files for the training, validation, and testing sets as `train.csv`, `val.csv`, and `test.csv`. The format of the CSV file is:
+
+```
+path_to_video_1 label_1
+path_to_video_2 label_2
+path_to_video_3 label_3
+...
+path_to_video_N label_N
+```
 
 
 
