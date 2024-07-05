@@ -97,7 +97,7 @@ path_to_video_N label_N
 
 #### Training 
 
-We provide configs for training fibottention for action recognition  on Smarthome, NTU and NUCLA datasets  in [action_recognition/configs/](configs/). Please update the paths in the config to match the paths in your machine before using.
+We provide configs to train fibottention for action recognition  on Smarthome, NTU and NUCLA datasets  in [action_recognition/configs/](configs/). Please update the paths in the config to match the paths in your machine before using.
 
 For example to train  on Smarthome using 8 GPUs run the following command:
 
