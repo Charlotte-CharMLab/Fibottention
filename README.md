@@ -24,7 +24,7 @@ Visual perception tasks are predominantly solved by Vision Transformer (ViT) arc
 
 ## Installation and training of Fibottention 
 
-### Image classification tasks:
+### Image classification:
 
 Use the commands below to install the required packages when setting up your environment:
 ```
@@ -55,9 +55,7 @@ For example, to train a model on the CIFAR-10 dataset, use the following command
 
 This command will trigger the script with the specified parameters, initiating the training process with the chosen settings.
 
-<br>
-
-### Action Recognition Task
+### Action recognition:
 
 #### Install dependencies 
 
@@ -94,7 +92,6 @@ path_to_video_N label_N
 ```
 
 
-
 #### Training 
 
 We provide configs to train fibottention for action recognition  on Smarthome, NTU and NUCLA datasets  in [action_recognition/configs/](configs/). Please update the paths in the config to match the paths in your machine before using.
@@ -103,6 +100,7 @@ For example to train  on Smarthome using 8 GPUs run the following command:
 
 `python action_recognition/tools/run_net.py --cfg configs/SMARTHOME.yaml NUM_GPUS 8`
 
+<br>
 
 ## Algorithms
 
