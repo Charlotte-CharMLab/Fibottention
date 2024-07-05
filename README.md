@@ -57,7 +57,7 @@ This command will trigger the script with the specified parameters, initiating t
 
 ## Action Recognition Task
 
-Please follow the instructions [here](action_recognition.md).
+Please follow the instructions [here](action_recognition/install.md) to install the dependecies to  run fibottention on action recognition tasks.
 
 
 ## Algorithms
