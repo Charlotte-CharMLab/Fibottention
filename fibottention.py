@@ -12,7 +12,7 @@ import torch
 import math
 import random
 
-# Getting a masked attention pattern using Wythoff's sequence
+# Getting a masked attention pattern using Wythoff sequence
 def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
     # Remove the first token from the query and key
     q_adjusted = q[:, :, 1:, :]
@@ -39,7 +39,7 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
 
     return mask_extended
 
-# Generate head indices using Wythoff sequence and Fibonacci numbers
+# Generate head indices using Wythoff sequence
 def generate_head_indices(N, h, omin, modified_flag):
     wmax = N
     headindices = [[] for _ in range(h)]
