@@ -115,7 +115,7 @@ Follow instructions at [this link](https://github.com/LostXine/crossway_diffusio
 #### Training
 To perform the robot learning experiments
 1. Navigate to `robot_learning/`
-2. In the command below, replace <DATASET> with the desired dataset. This work uses `can_ph`, `lift_ph`, or `pusht`
+2. In the command below, replace `<DATASET>` with the desired dataset. This work uses `can_ph`, `lift_ph`, or `pusht`
 3. Run the command
 ```
 train.py --config-dir=config/<DATASET>/ --config-name=typea.yaml training.seed=42 hydra.run.dir=outputs/vit-b-fibottention/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task_name}_${task.dataset_type}
