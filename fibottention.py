@@ -33,7 +33,7 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
             indices = torch.arange(max(i, 0), min(N, N + i))
             mask[:, h, indices, indices - i] = 1
 
-    # Extend mask to include the first token
+    # Extend mask to include the class token
     mask_extended = torch.ones((B, H, N + 1, N + 1), device=q.device, dtype=mask.dtype)
     mask_extended[:, :, 1:, 1:] = mask
 
