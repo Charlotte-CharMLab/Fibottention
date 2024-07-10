@@ -24,7 +24,7 @@ Visual perception tasks are predominantly solved by Vision Transformer (ViT) arc
 
 ## Installation and training of Fibottention 
 
-### Image classification:
+### Image classification
 
 Use the commands below to install the required packages when setting up your environment:
 ```
@@ -55,7 +55,7 @@ For example, to train a model on the CIFAR-10 dataset, use the following command
 
 This command will trigger the script with the specified parameters, initiating the training process with the chosen settings.
 
-### Action recognition:
+### Action recognition
 
 #### Install dependencies 
 
@@ -121,6 +121,7 @@ To perform the robot learning experiments
 train.py --config-dir=config/<DATASET>/ --config-name=typea.yaml training.seed=42 hydra.run.dir=outputs/vit-b-fibottention/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task_name}_${task.dataset_type}
 ```
 
+<br>
 
 ## Algorithms
 
