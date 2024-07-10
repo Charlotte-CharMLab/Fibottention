@@ -55,6 +55,8 @@ For example, to train a model on the CIFAR-10 dataset, use the following command
 
 This command will trigger the script with the specified parameters, initiating the training process with the chosen settings.
 
+<br>
+
 ### Action recognition
 
 #### Install dependencies 
