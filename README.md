@@ -107,18 +107,15 @@ For example to train  on Smarthome using 8 GPUs run the following command:
 ### Robot learning
 
 #### Install dependencies & download data
-Our robot learning code is built on top of the codebase for ["Crossway Diffusion: Improving Diffusion-based Visuomotor Policy via Self-supervised Learning"](https://arxiv.org/abs/2307.01849).
-
-Follow the installation instructions at [this link](https://github.com/LostXine/crossway_diffusion?tab=readme-ov-file#installation).
-
-Follow instructions at [this link](https://github.com/LostXine/crossway_diffusion?tab=readme-ov-file#download-datasets) to download the datasets.
-* This page will direct you to [this download page](https://diffusion-policy.cs.columbia.edu/data/training/). To reproduce the results in this work, only `pusht.zip` and `robomimic_image.zip` are needed.
+Our robot learning code is built on top of the codebase for ["Crossway Diffusion: Improving Diffusion-based Visuomotor Policy via Self-supervised Learning"](https://arxiv.org/abs/2307.01849). Please follow their guides for installing dependencies and obtaining the data.
+* Follow the installation instructions from [this link](https://github.com/LostXine/crossway_diffusion?tab=readme-ov-file#installation)
+* Follow instructions from [this link](https://github.com/LostXine/crossway_diffusion?tab=readme-ov-file#download-datasets) to download the datasets
+    * This page will direct you to [this download page](https://diffusion-policy.cs.columbia.edu/data/training/). To reproduce the results in this work, only `pusht.zip` and `robomimic_image.zip` are needed
 
 #### Training
 To perform the robot learning experiments
 1. Navigate to `robot_learning/`
-2. In the command below, replace `<DATASET>` with the desired dataset. This work uses `can_ph`, `lift_ph`, or `pusht`
-3. Run the command
+2. Run the following command, replacing `<DATASET>` with the desired dataset (this work uses `can_ph`, `lift_ph`, or `pusht`):
 ```
 train.py --config-dir=config/<DATASET>/ --config-name=typea.yaml training.seed=42 hydra.run.dir=outputs/vit-b-fibottention/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task_name}_${task.dataset_type}
 ```
