@@ -49,24 +49,23 @@ def generate_head_indices(N, h, omin, modified_flag):
         a = int(math.floor(math.floor(i * phi) * phi))
         b = int(math.floor(math.floor(i * phi) * phi ** 2))
         w = omin + int((wmax - omin) / (h - 1) * (i - 1))
-        headindices[i - 1] = get_fibonacci(a, b, w)
 
         if modified_flag:
             b_Wyt_m = b - a
             a_Wyt_m = a - b_Wyt_m
-            headindices[i - 1]= get_fibonacci(a_Wyt_m, b_Wyt_m, w)
+            headindices[i - 1] = get_fibonacci(a_Wyt_m, b_Wyt_m, w)
         else:
-            headindices[i - 1]= get_fibonacci(a,b,w)
+            headindices[i - 1] = get_fibonacci(a, b, w)
 
     headindices = [torch.tensor(seq, dtype=torch.int64) for seq in headindices]
     return headindices
 
 # # Generate Fibonacci sequence within a given range
 def get_fibonacci(a, b, w):
-    sequence = [a, b]
-    while sequence[-1] <= w:
-        sequence.append(sequence[-1] + sequence[-2])
-    return sequence[:-1]
+    fib_seq = [a, b]
+    while fib_seq[-1] <= w:
+        fib_seq.append(fib_seq[-1] + fib_seq[-2])
+    return fib_seq[:-1]
 
 # Shuffle the array of sets using a given seed
 def shuffle(i, array_of_sets):
