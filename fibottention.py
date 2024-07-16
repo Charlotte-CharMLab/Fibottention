@@ -12,7 +12,7 @@ import torch
 import math
 import random
 
-# Getting a masked attention pattern using Wythoff sequence
+# Getting a masked attention pattern using Wythoff's sequence
 def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
     # Remove the first token from the query and key
     q_adjusted = q[:, :, 1:, :]
@@ -20,6 +20,7 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
     
     B, H, N, _ = q_adjusted.size()  # Batch size, number of heads, number of tokens, embedding size
     headindices = generate_head_indices(N=N, h=H, omin=N, modified_flag=modified_flag)
+
     mask = torch.zeros((B, H, N, N), device=q.device, dtype=q.dtype)
 
     # Shuffle head indices based on depth_id
@@ -33,13 +34,13 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
             indices = torch.arange(max(i, 0), min(N, N + i))
             mask[:, h, indices, indices - i] = 1
 
-    # Extend mask to include the class token
+    # Extend mask to include the first token
     mask_extended = torch.ones((B, H, N + 1, N + 1), device=q.device, dtype=mask.dtype)
     mask_extended[:, :, 1:, 1:] = mask
 
     return mask_extended
 
-# Generate head indices using Wythoff sequence
+# Generate head indices using Wythoff sequence and Fibonacci numbers
 def generate_head_indices(N, h, omin, modified_flag):
     wmax = N
     headindices = [[] for _ in range(h)]
@@ -59,19 +60,12 @@ def generate_head_indices(N, h, omin, modified_flag):
     headindices = [torch.tensor(seq, dtype=torch.int64) for seq in headindices]
     return headindices
 
-# Generate Fibonacci sequence within a given range
+# # Generate Fibonacci sequence within a given range
 def get_fibonacci(a, b, w):
-    sequence = [a]
-    if b <= w:
-        sequence.append(b)
-    else:
-        return sequence
-    while True:
-        new_element = sequence[-1] + sequence[-2]
-        if new_element > w:
-            break
-        sequence.append(new_element)
-    return sequence
+    sequence = [a, b]
+    while sequence[-1] <= w:
+        sequence.append(sequence[-1] + sequence[-2])
+    return sequence[:-1]
 
 # Shuffle the array of sets using a given seed
 def shuffle(i, array_of_sets):
