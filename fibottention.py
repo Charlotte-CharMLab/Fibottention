@@ -20,7 +20,6 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
     
     B, H, N, _ = q_adjusted.size()  # Batch size, number of heads, number of tokens, embedding size
     headindices = generate_head_indices(N=N, h=H, omin=N, modified_flag=modified_flag)
-
     mask = torch.zeros((B, H, N, N), device=q.device, dtype=q.dtype)
 
     # Shuffle head indices based on depth_id
@@ -53,9 +52,11 @@ def generate_head_indices(N, h, omin, modified_flag):
         headindices[i - 1] = get_fibonacci(a, b, w)
 
         if modified_flag:
-            if i > 1:
-                headindices[i - 1].insert(0, a - (i - 1))
-                headindices[i - 1].insert(0, i - 1)
+            b_Wyt_m = b - a
+            a_Wyt_m = a - b_Wyt_m
+            headindices[i - 1]= get_fibonacci(a_Wyt_m, b_Wyt_m, w)
+        else:
+            headindices[i - 1]= get_fibonacci(a,b,w)
 
     headindices = [torch.tensor(seq, dtype=torch.int64) for seq in headindices]
     return headindices
