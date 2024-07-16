@@ -148,10 +148,13 @@ for i in range(1, h + 1):  # Loop over each head
     b = int(i * phi * phi**2)
     w_i = w_min + int((i - 1) * (w_max - w_min) / (h - 1))  # Window size for this head
     Θ = [[0]*N for _ in range(N)]  # Initialize intermediate mask
-    I = getFibonacci(a, b, w_i)  # Calculate Fibonacci indices using Algorithm 1
 
-    if is_modified and i > 1:  # Modify sequence if required
-        I.extend([0, (a-i), 0, (i-1)])
+    if is_modified:  # Modify sequence if required
+        b_Wyt_m = b - a
+        a_Wyt_m = a - b_Wyt_m
+        I = get_fibonacci(a_Wyt_m, b_Wyt_m, w)   # Calculate Fibonacci indices using Algorithm 1
+    else:
+        I = get_fibonacci(a, b, w)
     
     for o in I:  # Apply Fibonacci indices to mask
         for j in range(N-o):
