@@ -275,7 +275,7 @@ def fibottention(X, W_Q, W_K, W_V, d_h, wmin, wmax, is_modified):
 
 <br>
 
-## Acknowledgements
+## Acknowledgement
 
 This repository is built on top of  [`MAE`](https://github.com/facebookresearch/mae), [`TimeSformer`](https://github.com/facebookresearch/TimeSformer), and [`Crossway Diffusion`]([https://github.com/facebookresearch/TimeSformer](https://github.com/LostXine/crossway_diffusion)). We would like to thank all the contributors for these well organized codebases.
 
