@@ -13,13 +13,13 @@ import math
 import random
 
 # Getting a masked attention pattern using Wythoff's sequence
-def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
+def get_mask_attn_wythoff(q, k, is_modified, depth_id, add_class_token=True):
     # Remove the first token from the query and key
     q_adjusted = q[:, :, 1:, :]
     k_adjusted = k[:, :, 1:, :]
     
     B, H, N, _ = q_adjusted.size()  # Batch size, number of heads, number of tokens, embedding size
-    headindices = generate_head_indices(N=N, h=H, omin=N, modified_flag=modified_flag)
+    headindices = generate_head_indices(N=N, h=H, omin=N, is_modified=is_modified)
     mask = torch.zeros((B, H, N, N), device=q.device, dtype=q.dtype)
 
     # Shuffle head indices based on depth_id
@@ -33,14 +33,15 @@ def get_mask_attn_wythoff(q, k, modified_flag, depth_id):
             indices = torch.arange(max(i, 0), min(N, N + i))
             mask[:, h, indices, indices - i] = 1
 
-    # Extend mask to include the first token
-    mask_extended = torch.ones((B, H, N + 1, N + 1), device=q.device, dtype=mask.dtype)
-    mask_extended[:, :, 1:, 1:] = mask
+    if add_class_token:
+        # Extend mask to include the first token
+        mask_extended = torch.ones((B, H, N + 1, N + 1), device=q.device, dtype=mask.dtype)
+        mask_extended[:, :, 1:, 1:] = mask
 
     return mask_extended
 
 # Generate head indices using Wythoff sequence and Fibonacci numbers
-def generate_head_indices(N, h, omin, modified_flag):
+def generate_head_indices(N, h, omin, is_modified):
     wmax = N
     headindices = [[] for _ in range(h)]
     phi = (1 + math.sqrt(5)) / 2  # Golden ratio
@@ -50,7 +51,7 @@ def generate_head_indices(N, h, omin, modified_flag):
         b = int(math.floor(math.floor(i * phi) * phi ** 2))
         w = omin + int((wmax - omin) / (h - 1) * (i - 1))
 
-        if modified_flag:
+        if is_modified:
             b_Wyt_m = b - a
             a_Wyt_m = a - b_Wyt_m
             headindices[i - 1] = get_fibonacci(a_Wyt_m, b_Wyt_m, w)

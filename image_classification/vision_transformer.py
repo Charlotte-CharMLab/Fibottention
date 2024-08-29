@@ -113,7 +113,7 @@ class Attention(nn.Module):
             attn = q @ k.transpose(-2, -1)
 
             if cache is None or last_epoch is None or last_epoch != epoch:
-                cache = get_mask_attn_wythoff(q=q, k=k, modified_flag=False, depth_id=self.depth_id)
+                cache = get_mask_attn_wythoff(q=q, k=k, is_modified=False, depth_id=self.depth_id)
                 last_epoch = epoch
 
             attn = attn * (cache).float()
