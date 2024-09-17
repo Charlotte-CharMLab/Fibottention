@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import json
 import torch
 import numpy as np
+import datetime
 
 def plot_attention_mask_for_all_heads(attn):
     batch_index = 0
@@ -20,7 +21,37 @@ def plot_attention_mask_for_all_heads(attn):
     fig.colorbar(im, ax=axes.ravel().tolist(), orientation='vertical', shrink=0.6)
     plt.suptitle('Heatmaps of Mask Matrices for All Heads')
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/all_heads_{current_time}.png')
+    plt.savefig(f'image_classification/cifar10/plots/all_heads_{current_time}.png')
+    plt.close()
+
+def plot_attention_heatmap_for_all_heads(attn):
+    mean_attn = attn.mean(dim=0).cpu().detach()
+
+    fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
+    axes = axes.flatten()
+
+    for i, ax in enumerate(axes):
+        heatmap = ax.imshow(mean_attn[i], cmap='viridis', interpolation='nearest')
+        ax.set_title(f'Head {i + 1}')
+        ax.axis('off')
+
+    fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
+
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.savefig(f'image_classification/plots/cifar10/attention_heatmap_for_all_heads_{current_time}.png')
+    plt.close()
+
+def plot_total_aggregated_attention_heatmap(attn):
+    total_mean_attn = attn.mean(dim=[0, 1]).cpu().detach()
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    heatmap = ax.imshow(total_mean_attn, cmap='viridis', interpolation='nearest')
+    ax.set_title('Aggregated Attention Map')
+    ax.axis('off')
+    fig.colorbar(heatmap, ax=ax, shrink=0.95)
+
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    plt.savefig(f'image_classification/plots/cifar10/total_aggregated_attention_heatmap_{current_time}.png')
     plt.close()
 
 def plot_attention_mask_for_all_batches(attn):
@@ -56,33 +87,3 @@ def plot_attention_heatmap_for_all_batches(attn):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         plt.savefig(f'plots/cifar100/qkT_heatmap/batch{batch_index + 1}_{current_time}.png')
         plt.close()
-
-def plot_total_aggregated_attention_heatmap(attn):
-    total_mean_attn = attn.mean(dim=[0, 1]).cpu().detach()
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    heatmap = ax.imshow(total_mean_attn, cmap='viridis', interpolation='nearest')
-    ax.set_title('Aggregated Attention Map')
-    ax.axis('off')
-    fig.colorbar(heatmap, ax=ax, shrink=0.95)
-
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
-    plt.close()
-
-def plot_attention_heatmap_for_all_heads(attn):
-    mean_attn = attn.mean(dim=0).cpu().detach()
-
-    fig, axes = plt.subplots(3, 4, figsize=(20, 15), constrained_layout=True)
-    axes = axes.flatten()
-
-    for i, ax in enumerate(axes):
-        heatmap = ax.imshow(mean_attn[i], cmap='viridis', interpolation='nearest')
-        ax.set_title(f'Head {i + 1}')
-        ax.axis('off')
-
-    fig.colorbar(heatmap, ax=axes.ravel().tolist(), shrink=0.95)
-
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    plt.savefig(f'plots/cifar100/total_aggregated_heatmap/baseline{current_time}.png')
-    plt.close()

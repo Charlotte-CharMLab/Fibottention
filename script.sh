@@ -10,7 +10,7 @@ device=$6
 batch=$7
 mask_ratio=$8
 
-CUDA_VISIBLE_DEVICES=7 python -m torch.distributed.launch --nproc_per_node=1  image_classification/main_finetune.py  \
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1  image_classification/main_finetune.py  \
     --dataset $dataset --model vit_${model}_patch16 \
     --dist_url 'tcp://localhost:1000'$id \
     --epochs 100 \

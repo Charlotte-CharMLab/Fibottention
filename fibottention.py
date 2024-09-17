@@ -19,11 +19,11 @@ def get_mask_attn_wythoff(q, k, is_modified, depth_id, add_class_token=True):
     k_adjusted = k[:, :, 1:, :]
     
     B, H, N, _ = q_adjusted.size()  # Batch size, number of heads, number of tokens, embedding size
-    headindices = generate_head_indices(N=N, h=H, omin=N, is_modified=is_modified)
+    headindices = generate_head_indices(N=N, h=H, wmin=5, is_modified=is_modified)
     mask = torch.zeros((B, H, N, N), device=q.device, dtype=q.dtype)
 
-    # Shuffle head indices based on depth_id
-    headindices = shuffle(depth_id, headindices)
+    # Shuffle head indices across layers
+    # headindices = shuffle(depth_id, headindices)
     for h in range(H):
         fib_indices = headindices[h]
         for i in fib_indices:
@@ -33,6 +33,8 @@ def get_mask_attn_wythoff(q, k, is_modified, depth_id, add_class_token=True):
             indices = torch.arange(max(i, 0), min(N, N + i))
             mask[:, h, indices, indices - i] = 1
 
+        print(f'h= {h}, fib_indices= {fib_indices}')
+
     if add_class_token:
         # Extend mask to include the first token
         mask_extended = torch.ones((B, H, N + 1, N + 1), device=q.device, dtype=mask.dtype)
@@ -41,15 +43,15 @@ def get_mask_attn_wythoff(q, k, is_modified, depth_id, add_class_token=True):
     return mask_extended
 
 # Generate head indices using Wythoff sequence and Fibonacci numbers
-def generate_head_indices(N, h, omin, is_modified):
-    wmax = N
+def generate_head_indices(N, h, wmin, is_modified):
+    wmax = N//3
     headindices = [[] for _ in range(h)]
     phi = (1 + math.sqrt(5)) / 2  # Golden ratio
 
     for i in range(1, h + 1):
         a = int(math.floor(math.floor(i * phi) * phi))
         b = int(math.floor(math.floor(i * phi) * phi ** 2))
-        w = omin + int((wmax - omin) / (h - 1) * (i - 1))
+        w = wmin + int((wmax - wmin) / (h - 1) * (i - 1))
 
         if is_modified:
             b_Wyt_m = b - a
