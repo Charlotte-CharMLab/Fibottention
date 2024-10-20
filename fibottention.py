@@ -23,7 +23,7 @@ def get_mask_attn_wythoff(q, k, is_modified, depth_id, add_class_token=True):
     mask = torch.zeros((B, H, N, N), device=q.device, dtype=q.dtype)
 
     # Shuffle head indices across layers
-    # headindices = shuffle(depth_id, headindices)
+    headindices = shuffle(depth_id, headindices)
     for h in range(H):
         fib_indices = headindices[h]
         for i in fib_indices:
