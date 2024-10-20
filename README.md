@@ -11,7 +11,7 @@
 <br>
 
 ## Overview
-This repository contains the implementation of our proposed Fibottention mechanism and related algorithms. The complete codebase for video understanding and robot learning will be provided soon.
+This repository contains the implementation of our proposed Fibottention mechanism and related algorithms. 
 
 The paper is now available on [arXiv](https://arxiv.org/abs/2406.19391).
 
