@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 # --------------------------------------------------------
 # References:
-# DeiT: https://github.com/Charlotte-CharMLab/Fibottention
+# https://github.com/Charlotte-CharMLab/Fibottention
 # --------------------------------------------------------
 
 import torch
