@@ -21,9 +21,9 @@ echo "Batch Size: $batch" >> $out_dir/log.txt
 echo "Mask Ratio: $mask_ratio" >> $out_dir/log.txt
 echo "----------------------------------" >> $out_dir/log.txt
 
-CUDA_VISIBLE_DEVICES=$device python image_classification/main_finetune.py  \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun \
+    --nproc_per_node=8 --master_port=$((10000 + $id)) image_classification/main_finetune.py \
     --dataset $dataset --model vit_${model}_patch16 \
-    --dist_url 'tcp://localhost:1000'$id \
     --epochs 100 \
     --cls_token \
     --nb_classes $classes \

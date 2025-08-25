@@ -145,6 +145,8 @@ cython_debug/
 # Data and experiments
 data/
 exp/
+/image_classification/ablations
+/image_classification/baselines
 image_classification/data
 image_classification/exp
 fibottention_wythoff_asymmetric.py
