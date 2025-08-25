@@ -48,7 +48,7 @@ from timm.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_,
 from timm.models._builder import build_model_with_cfg
 from timm.models._manipulate import named_apply, checkpoint_seq, adapt_input_conv
 from timm.models._registry import generate_default_cfgs, register_model, register_model_deprecations
-from utils.plot import plot_attention_mask_for_all_heads, plot_attention_mask_for_all_batches, plot_attention_heatmap_for_all_heads, plot_total_aggregated_attention_heatmap
+from utils.plot import plot_attention_mask_for_all_heads
 
 __all__ = ['VisionTransformer']  # model_registry will add each entrypoint fn to this
 
