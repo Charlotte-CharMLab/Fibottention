@@ -47,14 +47,6 @@ To train the model, use the script.sh file which executes main_finetune.py with 
 - `batch`: The batch size for training.
 - `mask_ratio`: The ratio for masking during training.
 
-For example, to train a model on the CIFAR-10 dataset, use the following command:
-
-```bash
-./script.sh 1 exp/cifar10/test base c10 10 0 16 0.4
-```
-
-This command will trigger the script with the specified parameters, initiating the training process with the chosen settings.
-
 <br>
 
 ### Action recognition
