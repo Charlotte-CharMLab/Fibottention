@@ -275,14 +275,12 @@ This repository is built on top of  [`MAE`](https://github.com/facebookresearch/
 
 ## Citation
 ```
-@misc{rahimian2024fibottentioninceptivevisualrepresentation,
-      title={Fibottention: Inceptive Visual Representation Learning with Diverse Attention Across Heads}, 
-      author={Ali Khaleghi Rahimian and Manish Kumar Govind and Subhajit Maity and Dominick Reilly and Christian Kümmerle and Srijan Das and Aritra Dutta},
-      year={2024},
-      eprint={2406.19391},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2406.19391}, 
+@article{rahimian2024fibottention,
+  title = {Fibottention: Inceptive Visual Representation Learning with Diverse Attention Across Heads},
+  author = {Rahimian, Ali Khaleghi and Govind, Manish Kumar and Maity, Subhajit and Reilly, Dominick and Kümmerle, Christian and Das, Srijan and Dutta, Aritra},
+  journal = {arXiv preprint arXiv:2406.19391},
+  year = {2024},
+  url = {https://arxiv.org/abs/2406.19391}
 }
 ```
 
